@@ -1489,6 +1489,9 @@
       border-radius: 99px;
     }
   </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
   <div class="app" id="app">
@@ -3451,5 +3454,12 @@
     loadState();
     render();
   </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+</script>
 </body>
 </html>
