@@ -1,0 +1,51 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Create Capacitor project
+        run: |
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/assets@3
+          mkdir www
+          cp index.html www/index.html
+          npx cap init "Трекер посещаемости" com.attendance.tracker --web-dir www
+          npx cap add android
+
+      - name: Generate icons and splash
+        run: |
+          mkdir -p assets
+          cp icon.png assets/icon-only.png
+          if [ -f splash.png ]; then
+            cp splash.png assets/splash.png
+            cp splash.png assets/splash-dark.png
+          fi
+          npx capacitor-assets generate --android --iconBackgroundColor '#5b7be8' --iconBackgroundColorDark '#5b7be8'
+
+      - name: Build APK
+        run: |
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: attendance-tracker-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
